@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>پلنر من | داشبورد شخصی</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">m.</div>
+        <div><strong>little planner</strong><small>فضای کوچک برای نظم بزرگ</small></div>
+      </div>
+      <div class="sidebar-label">فضای کاری</div>
+      <nav class="nav">
+        <button class="nav-link active" data-view="assignments"><span class="nav-icon">▦</span><span>تکالیف</span><small>01</small></button>
+        <button class="nav-link" data-view="habits"><span class="nav-icon">◷</span><span>عادت‌ها</span><small>02</small></button>
+        <button class="nav-link" data-view="weekly"><span class="nav-icon">▤</span><span>پلنر هفتگی</span><small>03</small></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="mini-note"><span class="note-dot"></span><div><b>قدم‌های کوچک</b><p>هر روز کمی بهتر از دیروز.</p></div></div>
+        <button type="button" class="reset-demo-btn" id="clear-all-data">پاک کردن همه‌ی اطلاعات</button><div class="sidebar-foot">نسخه شخصی · ۲۰۲۶</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow" id="top-eyebrow">STUDY SPACE / 01</div>
+          <h1 id="page-title">تکالیف</h1>
+          <p id="page-subtitle">همه‌ی کارهای درسی، یک‌جا و مرتب.</p>
+        </div>
+        <div class="top-actions">
+          <span class="today-pill" id="today-label">امروز</span>
+          <button class="primary-btn" id="main-add">＋ افزودن تکلیف</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-assignments">
+        <div class="summary-grid">
+          <article class="summary-card progress-card">
+            <div class="card-heading"><span>پیشرفت کلی</span><span class="tiny-tag">این ترم</span></div>
+            <div class="big-number"><span id="assignment-progress">0</span><small>٪</small></div>
+            <div class="progress-track"><span id="assignment-progress-bar"></span></div>
+            <p class="muted" id="assignment-progress-copy">از تکالیف ثبت‌شده</p>
+          </article>
+          <article class="summary-card">
+            <div class="card-heading"><span>تکالیف باقی‌مانده</span><span class="card-symbol peach">↗</span></div>
+            <div class="big-number" id="remaining-count">0</div>
+            <p class="muted">کارهایی که هنوز تمام نشده‌اند</p>
+          </article>
+          <article class="summary-card">
+            <div class="card-heading"><span>اولویت تکالیف</span><span class="card-symbol lilac">⌁</span></div>
+            <div class="mini-bars" id="priority-bars"></div>
+            <div class="legend-row"><span><i class="dot dot-high"></i>بالا</span><span><i class="dot dot-medium"></i>متوسط</span><span><i class="dot dot-low"></i>کم</span></div>
+          </article>
+          <article class="summary-card">
+            <div class="card-heading"><span>وضعیت تکالیف</span><span class="card-symbol mint">◌</span></div>
+            <div class="status-chart"><div class="donut" id="assignment-donut"><div><b id="completed-count">0</b><small>انجام‌شده</small></div></div><div class="status-legend" id="assignment-legend"></div></div>
+          </article>
+        </div>
+
+        <div class="section-heading">
+          <div><h2>فهرست تکالیف</h2><p>جزئیات درس‌ها و ددلاین‌ها را اینجا مدیریت کن.</p></div>
+          <div class="table-tools">
+            <input id="assignment-search" class="search-input" placeholder="جست‌وجوی تکلیف..." />
+            <select id="assignment-filter" class="select-input"><option value="all">همه وضعیت‌ها</option><option value="todo">شروع نشده</option><option value="doing">در حال انجام</option><option value="done">انجام شده</option></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>نام درس</th><th>نوع تکلیف</th><th>توضیحات</th><th>اولویت</th><th>وضعیت</th><th>تاریخ</th><th>روز باقی‌مانده</th><th>یادداشت</th><th></th></tr></thead>
+            <tbody id="assignments-body"></tbody>
+          </table>
+          <div class="empty-state" id="assignments-empty" hidden>هنوز تکلیفی ثبت نکردی. اولین مورد را اضافه کن.</div>
+        </div>
+      </section>
+
+      <section class="view" id="view-habits">
+        <div class="habit-top-grid">
+          <article class="panel chart-panel">
+            <div class="panel-title"><div><h2>روند استمرار</h2><p>تعداد عادت‌های انجام‌شده در روزهای اخیر</p></div><span class="tiny-tag">۳۰ روز اخیر</span></div>
+            <div class="area-chart" id="habit-area-chart"></div>
+          </article>
+          <article class="panel compact-panel">
+            <div class="panel-title"><div><h2>عادت‌های فعال</h2><p>عادت‌هایی که دنبال می‌کنی</p></div></div>
+            <div id="habit-mini-list" class="habit-mini-list"></div>
+          </article>
+          <article class="panel compact-panel">
+            <div class="panel-title"><div><h2>خلاصه‌ی امروز</h2><p>پیشرفت روزانه</p></div></div>
+            <div class="habit-today-number"><b id="today-habit-percent">0%</b><span>از عادت‌ها کامل شده</span></div>
+            <div class="progress-track"><span id="today-habit-bar"></span></div>
+            <div class="small-stat-row"><span>انجام‌شده</span><b id="today-habit-done">0 از 0</b></div>
+          </article>
+        </div>
+        <div class="section-heading habit-heading">
+          <div><h2>تقویم پیگیری عادت‌ها</h2><p>برای ثبت عادت روزانه، خانه‌ی مربوط به امروز را علامت بزن.</p></div>
+          <button class="primary-btn" id="add-habit">＋ عادت جدید</button>
+        </div>
+        <div class="panel habit-calendar-panel">
+          <div class="calendar-legend"><span><i class="legend-square cyan"></i>سلامت</span><span><i class="legend-square green"></i>یادگیری</span><span><i class="legend-square purple"></i>سبک زندگی</span><span><i class="legend-square orange"></i>شخصی</span></div>
+          <div class="habit-calendar-wrap"><table class="habit-calendar" id="habit-calendar"></table></div>
+        </div>
+        <div class="section-heading"><div><h2>لیست عادت‌ها</h2><p>اسم، دسته‌بندی و هدف هر عادت را ویرایش کن.</p></div></div>
+        <div class="habit-cards" id="habit-cards"></div>
+      </section>
+
+      <section class="view" id="view-weekly">
+        <div class="weekly-layout">
+          <aside class="weekly-sidebar">
+            <article class="panel month-panel">
+              <div class="panel-title"><h2 id="mini-month-title">تقویم ماه</h2><div class="calendar-nav"><button type="button" id="month-prev" aria-label="ماه قبل">‹</button><button type="button" id="month-today">امروز</button><button type="button" id="month-next" aria-label="ماه بعد">›</button></div></div><div class="selected-date-label" id="selected-date-label"></div><div class="mini-calendar" id="mini-calendar"></div>
+            </article>
+            <article class="panel weekly-progress-panel">
+              <div class="panel-title"><h2>پیشرفت هفتگی</h2></div>
+              <div class="weekly-progress-number"><b id="week-progress">0%</b><span>کارهای تکمیل‌شده</span></div>
+              <div class="progress-track"><span id="week-progress-bar"></span></div>
+              <div class="week-bars" id="week-bars"></div>
+            </article>
+            <article class="panel focus-panel">
+              <div class="panel-title"><h2>عادت‌های این هفته</h2></div>
+              <div id="weekly-habits"></div>
+            </article>
+          </aside>
+          <div class="weekly-days" id="weekly-days"></div>
+        </div>
+      </section>
+      <footer class="app-footer"><span>made for your future self</span><span>اطلاعات به‌صورت خودکار در همین مرورگر ذخیره می‌شود.</span></footer>
+    </main>
+  </div>
+
+  <dialog id="item-dialog" class="modal">
+    <form method="dialog" id="item-form">
+      <div class="modal-head"><div><span class="eyebrow">QUICK EDIT</span><h2 id="modal-title">افزودن مورد جدید</h2></div><button type="button" class="close-btn" id="modal-close">×</button></div>
+      <div id="modal-fields" class="modal-fields"></div>
+      <div class="modal-actions"><button type="button" class="secondary-btn" id="modal-cancel">انصراف</button><button type="submit" class="primary-btn">ذخیره اطلاعات</button></div>
+    </form>
+  </dialog>
+  <script src="script.js"></script>
+</body>
+</html>
