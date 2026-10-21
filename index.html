@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>پلنر من | داشبورد شخصی</title>
+  <title>Little Planner | Personal Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,6 +17,7 @@
         <div><strong>little planner</strong><small>فضای کوچک برای نظم بزرگ</small></div>
       </div>
       <div class="sidebar-label">فضای کاری</div>
+      <a class="account-link" href="login.html" id="account-link">ورود / ساخت حساب</a>
       <nav class="nav">
         <button class="nav-link active" data-view="assignments"><span class="nav-icon">▦</span><span>تکالیف</span><small>01</small></button>
         <button class="nav-link" data-view="habits"><span class="nav-icon">◷</span><span>عادت‌ها</span><small>02</small></button>
@@ -24,7 +25,7 @@
       </nav>
       <div class="sidebar-bottom">
         <div class="mini-note"><span class="note-dot"></span><div><b>قدم‌های کوچک</b><p>هر روز کمی بهتر از دیروز.</p></div></div>
-        <button type="button" class="reset-demo-btn" id="clear-all-data">پاک کردن همه‌ی اطلاعات</button><div class="sidebar-foot">نسخه شخصی · ۲۰۲۶</div>
+        <button type="button" class="reset-demo-btn" id="clear-day-data">پاک کردن اطلاعات همین روز</button><div class="sidebar-foot">نسخه شخصی · ۲۰۲۶</div>
       </div>
     </aside>
 
@@ -36,7 +37,7 @@
           <p id="page-subtitle">همه‌ی کارهای درسی، یک‌جا و مرتب.</p>
         </div>
         <div class="top-actions">
-          <span class="today-pill" id="today-label">امروز</span>
+          <div class="top-toggles"><button type="button" id="theme-toggle" class="utility-btn">☾ دارک</button><button type="button" id="language-toggle" class="utility-btn">EN</button><span class="today-pill" id="today-label">امروز</span></div>
           <button class="primary-btn" id="main-add">＋ افزودن تکلیف</button>
         </div>
       </header>
