@@ -12,7 +12,7 @@ function jalaliToGregorian(jy,jm,jd){
  const leapG=Math.floor(gy/4)-Math.floor((Math.floor(gy/100)+1)*3/4)-150;const march=20+leapJ-leapG;
  const g=new Date(gy,2,march);const offset=(jm<=7?(jm-1)*31:(6*31+(jm-7)*30))+jd-1;g.setDate(g.getDate()+offset);return iso(g);
 }
-function parseDateInput(value){if(isEnglish()&&/^\d{4}-\d{2}-\d{2}$/.test(value))return value;const digits=value.replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c));const m=digits.trim().match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);if(!m)return null;const isoDate=jalaliToGregorian(+m[1],+m[2],+m[3]);return /^\d{4}-\d{2}-\d{2}$/.test(isoDate)?isoDate:null;}
+function parseDateInput(value){if(/^\d{4}-\d{2}-\d{2}$/.test(value))return value;const digits=value.replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c));const m=digits.trim().match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);if(!m)return null;const isoDate=jalaliToGregorian(+m[1],+m[2],+m[3]);return /^\d{4}-\d{2}-\d{2}$/.test(isoDate)?isoDate:null;}
 
 const weekDaysFa = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
 const weekDaysEn = ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'];
@@ -26,7 +26,7 @@ const makeEmptyWeek = (anchor = today) => {
  return Array.from({length:7},(_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);return {day:weekDayName(i),date:iso(d),focus:'',tasks:[]};});
 };
 function load(key, fallback){try{const v=JSON.parse(localStorage.getItem('littlePlanner_'+key));return v??fallback}catch{return fallback}}
-function save(key,val){localStorage.setItem('littlePlanner_'+key,JSON.stringify(val))}
+function save(key,val){try{localStorage.setItem('littlePlanner_'+key,JSON.stringify(val));return true}catch(err){console.error('Could not save planner data:',err);return false}}
 let assignments=load('assignments',defaultAssignments), habits=load('habits',defaultHabits), weekly=load('weekly',makeEmptyWeek());
 let selectedCalendarDate=iso(today);
 let displayedMonth=new Date(today.getFullYear(),today.getMonth(),today.getDate());
@@ -150,7 +150,36 @@ function renderAll(){renderAssignments();renderHabits();renderWeekly()}
 $('#assignment-search').addEventListener('input',renderAssignments);$('#assignment-filter').addEventListener('change',renderAssignments);
 $('#add-habit').onclick=()=>openModal('habit');
 const dialog=$('#item-dialog'),fields=$('#modal-fields');
-function field(label,name,type='text',value='',opts=null,full=false){let input=type==='textarea'?`<textarea name="${name}" ${full?'':' '}>${esc(value)}</textarea>`:type==='select'?`<select name="${name}">${opts.map(o=>`<option value="${esc(o[0])}" ${o[0]===value?'selected':''}>${esc(o[1])}</option>`).join('')}</select>`:`<input name="${name}" type="${type}" value="${esc(value)}" ${type==='number'?'min="1"':''} required>`;return `<div class="field ${full?'full':''}"><label>${label}</label>${input}</div>`}
+function field(label,name,type='text',value='',opts=null,full=false,required=true){let input=type==='textarea'?`<textarea name="${name}">${esc(value)}</textarea>`:type==='select'?`<select name="${name}">${opts.map(o=>`<option value="${esc(o[0])}" ${o[0]===value?'selected':''}>${esc(o[1])}</option>`).join('')}</select>`:type==='date'?`<div class="date-picker-wrap"><input name="${name}" type="text" inputmode="none" readonly value="${esc(dateForInput(value))}" data-iso-date="${esc(value)}" ${required?'required':''} aria-label="${isEnglish()?'Choose due date':'انتخاب تاریخ سررسید'}"><button type="button" class="date-picker-trigger" aria-label="${isEnglish()?'Open calendar':'باز کردن تقویم'}">▦</button><div class="date-picker-popover" hidden></div></div>`:`<input name="${name}" type="${type}" value="${esc(value)}" ${type==='number'?'min="1"':''} ${required?'required':''}>`;return `<div class="field ${full?'full':''}"><label>${label}</label>${input}</div>`}
+let datePickerMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+function renderDatePicker(popover, input) {
+ const english=isEnglish();
+ let first, title, daysInMonth;
+ const selectedISO=input.dataset.isoDate || iso(today);
+ const selectedDate=new Date(selectedISO+'T12:00:00');
+ if(english){first=new Date(datePickerMonth.getFullYear(),datePickerMonth.getMonth(),1);title=new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric'}).format(first);daysInMonth=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();}
+ else {first=firstGregorianDayOfPersianMonth(datePickerMonth);const pp=persianParts(first);title=new Intl.DateTimeFormat('fa-IR-u-ca-persian',{month:'long',year:'numeric'}).format(first);daysInMonth=0;for(let d=new Date(first);;d.setDate(d.getDate()+1)){const q=persianParts(d);if(q.year!==pp.year||q.month!==pp.month)break;daysInMonth++;}}
+ const startOffset=english?first.getDay():((first.getDay()+1)%7);
+ const weekdayNames=english?['Su','Mo','Tu','We','Th','Fr','Sa']:['ش','ی','د','س','چ','پ','ج'];
+ let html=`<div class="date-picker-head"><button type="button" data-picker-shift="-1" aria-label="${english?'Previous month':'ماه قبل'}">‹</button><strong>${title}</strong><button type="button" data-picker-shift="1" aria-label="${english?'Next month':'ماه بعد'}">›</button></div><div class="date-picker-grid">${weekdayNames.map(w=>`<span class="date-picker-weekday">${w}</span>`).join('')}`;
+ for(let i=0;i<startOffset;i++)html+='<span class="date-picker-blank"></span>';
+ for(let n=1;n<=daysInMonth;n++){
+   let date;
+   if(english)date=new Date(first.getFullYear(),first.getMonth(),n,12);
+   else {date=new Date(first);date.setDate(first.getDate()+n-1);}
+   const key=iso(date), shown=english?new Intl.NumberFormat('en-US').format(n):new Intl.NumberFormat('fa-IR').format(n);
+   html+=`<button type="button" class="date-picker-day ${key===selectedISO?'selected':''} ${key===iso(today)?'today':''}" data-picker-date="${key}">${shown}</button>`;
+ }
+ html+='</div>';
+ popover.innerHTML=html;
+ popover.querySelectorAll('[data-picker-shift]').forEach(btn=>btn.addEventListener('click',()=>{const shift=+btn.dataset.pickerShift;datePickerMonth=english?new Date(datePickerMonth.getFullYear(),datePickerMonth.getMonth()+shift,1):shiftPersianMonth(datePickerMonth,shift);renderDatePicker(popover,input);}));
+ popover.querySelectorAll('[data-picker-date]').forEach(btn=>btn.addEventListener('click',()=>{input.dataset.isoDate=btn.dataset.pickerDate;input.value=dateForInput(btn.dataset.isoDate);popover.hidden=true;input.dispatchEvent(new Event('change',{bubbles:true}));}));
+}
+document.addEventListener('click',e=>{
+ const trigger=e.target.closest('.date-picker-trigger');
+ if(trigger){const wrap=trigger.closest('.date-picker-wrap'),input=wrap.querySelector('input[name="date"]'),pop=wrap.querySelector('.date-picker-popover');document.querySelectorAll('.date-picker-popover').forEach(p=>{if(p!==pop)p.hidden=true;});const parsed=input.dataset.isoDate||parseDateInput(input.value)||iso(today);datePickerMonth=new Date(parsed+'T12:00:00');datePickerMonth=isEnglish()?new Date(datePickerMonth.getFullYear(),datePickerMonth.getMonth(),1):firstGregorianDayOfPersianMonth(datePickerMonth);renderDatePicker(pop,input);pop.hidden=!pop.hidden;return;}
+ if(!e.target.closest('.date-picker-wrap'))document.querySelectorAll('.date-picker-popover').forEach(p=>p.hidden=true);
+});
 function openModal(type,id=null,dayIndex=null){
  editing={type,id,dayIndex};let item=null;
  if(type==='assignment')item=id?assignments.find(x=>x.id===id):{course:'',type:'تمرین',desc:'',priority:'متوسط',status:'todo',date:iso(today),note:''};
@@ -158,14 +187,14 @@ function openModal(type,id=null,dayIndex=null){
  if(type==='weekly')item={name:'',priority:'متوسط'};
  $('#modal-title').textContent=({assignment:id?'ویرایش تکلیف':'افزودن تکلیف',habit:id?'ویرایش عادت':'افزودن عادت',weekly:'افزودن کار به برنامه'})[type];
  let html='';
- if(type==='assignment')html=field('نام درس','course','text',item.course)+field('نوع تکلیف','type','select',item.type,[['تمرین','تمرین'],['گزارش','گزارش'],['پروژه','پروژه'],['مطالعه','مطالعه'],['امتحان','امتحان']])+field('توضیحات','desc','text',item.desc,null,true)+field('اولویت','priority','select',item.priority,[['بالا','بالا'],['متوسط','متوسط'],['کم','کم']])+field('وضعیت','status','select',item.status,[['todo','شروع نشده'],['doing','در حال انجام'],['done','انجام شده']])+field('ددلاین','text','text',dateForInput(item.date))+field('یادداشت','note','textarea',item.note,null,true);
+ if(type==='assignment')html=field('نام درس','course','text',item.course)+field('نوع تکلیف','type','select',item.type,[['تمرین','تمرین'],['گزارش','گزارش'],['پروژه','پروژه'],['مطالعه','مطالعه'],['امتحان','امتحان']])+field('توضیحات','desc','text',item.desc,null,true,false)+field('اولویت','priority','select',item.priority,[['بالا','بالا'],['متوسط','متوسط'],['کم','کم']])+field('وضعیت','status','select',item.status,[['todo','شروع نشده'],['doing','در حال انجام'],['done','انجام شده']])+field('ددلاین','date', 'date', item.date)+field('یادداشت','note','textarea',item.note,null,true);
  if(type==='habit')html=field('نام عادت','name','text',item.name)+field('ایموجی / نشانه','emoji','text',item.emoji)+field('دسته‌بندی','category','select',item.category,[['سلامت','سلامت'],['یادگیری','یادگیری'],['سبک زندگی','سبک زندگی'],['شخصی','شخصی']])+field('هدف عددی','goal','number',item.goal)+field('رنگ','color','select',String(item.color),[['0','آبی'],['1','سبز'],['2','بنفش'],['3','نارنجی'],['4','صورتی']]);
  if(type==='weekly')html=field('عنوان کار','name','text','',null,true)+field('اولویت','priority','select','متوسط',[['کم','کم'],['متوسط','متوسط'],['زیاد','زیاد']]);
  fields.innerHTML=html;dialog.showModal();
 }
 function closeModal(){dialog.close();editing={type:null,id:null}}
 $('#modal-close').onclick=closeModal;$('#modal-cancel').onclick=closeModal;
-$('#item-form').onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());const {type,id,dayIndex}=editing;if(type==='assignment'){const parsed=parseDateInput(data.date);if(!parsed){$('#modal-fields input[name="date"]').setCustomValidity(isEnglish()?'Use YYYY-MM-DD in English or YYYY/MM/DD in Persian.':'تاریخ را به شکل سال/ماه/روز شمسی وارد کن.');$('#modal-fields input[name="date"]').reportValidity();return;}data.date=parsed;}
+$('#item-form').onsubmit=e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());const {type,id,dayIndex}=editing;if(type==='assignment'){const dateInput=$('#modal-fields input[name="date"]');const parsed=dateInput?.dataset.isoDate||parseDateInput(data.date);if(!parsed){dateInput?.setCustomValidity(isEnglish()?'Choose a valid due date.':'یک تاریخ معتبر انتخاب کن.');dateInput?.reportValidity();return;}data.date=parsed;}
  if(type==='assignment'){if(id){Object.assign(assignments.find(a=>a.id===id),data)}else assignments.unshift({...data,id:Date.now()});save('assignments',assignments)}
  if(type==='habit'){data.goal=+data.goal;data.color=+data.color;if(id)Object.assign(habits.find(h=>h.id===id),data);else habits.push({...data,id:Date.now()});save('habits',habits)}
  if(type==='weekly'){let day=weekly.find(d=>d.date===dayIndex);if(!day){const dt=new Date((dayIndex||selectedCalendarDate)+'T12:00:00');const off=(dt.getDay()+1)%7;dt.setDate(dt.getDate()-off);for(let i=0;i<7;i++){const d=new Date(dt);d.setDate(dt.getDate()+i);const key=iso(d);if(!weekly.some(x=>x.date===key))weekly.push({day:weekDayName(i),date:key,focus:'',tasks:[]});}day=weekly.find(d=>d.date===dayIndex)}if(day)day.tasks.push([data.name,data.priority,false]);save('weekly',weekly)}
@@ -232,7 +261,12 @@ function applyLanguage(lang){
  setTextIfChanged($('#today-label'),lang==='fa'?new Intl.DateTimeFormat('fa-IR-u-ca-persian',{weekday:'long',day:'numeric',month:'long'}).format(today):new Intl.DateTimeFormat('en-US',{weekday:'long',day:'numeric',month:'long'}).format(today));
 }
 $('#language-toggle').addEventListener('click',()=>{uiLang=uiLang==='fa'?'en':'fa';displayedMonth=uiLang==='en'?new Date(today.getFullYear(),today.getMonth(),1):firstGregorianDayOfPersianMonth(today);applyLanguage(uiLang);renderAll();applyLanguage(uiLang);});
-const languageObserver=new MutationObserver(()=>{if(!languageObserver.busy){languageObserver.busy=true;applyLanguage(uiLang);languageObserver.busy=false;}});
+const languageObserver=new MutationObserver(()=>{
+  // Translation changes text nodes too; disconnect while applying translations to prevent an observer loop.
+  languageObserver.disconnect();
+  applyLanguage(uiLang);
+  languageObserver.observe(document.body,{childList:true,subtree:true});
+});
 languageObserver.observe(document.body,{childList:true,subtree:true});
 applyLanguage(uiLang);
 // Add an individual trash button beside each weekly task.
