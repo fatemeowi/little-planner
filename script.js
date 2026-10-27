@@ -87,7 +87,7 @@ function renderHabits(){
  const todayDone=habits.filter(h=>isHabitDone(h.id,iso(today))).length,pct=habits.length?Math.round(todayDone/habits.length*100):0;
  $('#today-habit-percent').textContent=pct+'%';$('#today-habit-bar').style.width=pct+'%';$('#today-habit-done').textContent=`${todayDone} از ${habits.length}`;
  $('#habit-mini-list').innerHTML=habits.slice(0,5).map((h,i)=>{const n=lastDates.filter(d=>isHabitDone(h.id,d)).length;return `<div class="habit-mini-row"><span>${h.emoji} ${esc(h.name)}</span><b>${n}/30</b><div class="mini-track"><span style="width:${n/30*100}%;background:${habitColors[h.color%habitColors.length]}"></span></div></div>`}).join('')||'<span class="muted">هنوز عادتی اضافه نشده.</span>';
- const dates=Array.from({length:35},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-34+i);return iso(d)});
+ const monthStart=isEnglish()?new Date(today.getFullYear(),today.getMonth(),1):firstGregorianDayOfPersianMonth(today);const dates=Array.from({length:30},(_,i)=>{const d=new Date(monthStart);d.setDate(d.getDate()+i);return iso(d)});
  let table='<thead><tr><th>عادت روزانه</th>'+dates.map(d=>`<th title="${d}">${new Intl.DateTimeFormat(isEnglish()?'en-US':'fa-IR-u-ca-persian',{day:'numeric'}).format(new Date(d+'T12:00:00'))}</th>`).join('')+'</tr></thead><tbody>';
  table+=habits.map(h=>`<tr><td>${h.emoji} ${esc(h.name)}</td>${dates.map(d=>`<td><input class="habit-check" type="checkbox" data-habit="${h.id}" data-date="${d}" style="--habit-color:${habitColors[h.color%habitColors.length]}" ${isHabitDone(h.id,d)?'checked':''} aria-label="${esc(h.name)} ${d}"></td>`).join('')}</tr>`).join('');
  $('#habit-calendar').innerHTML=table+'</tbody>';
@@ -185,7 +185,7 @@ $('#clear-day-data').addEventListener('click',()=>{
 });
 // Theme preference
 const savedTheme=localStorage.getItem('littlePlanner_theme')||'light';
-function applyTheme(theme){document.body.classList.toggle('dark-mode',theme==='dark');const en=document.documentElement.lang==='en';$('#theme-toggle').textContent=theme==='dark'?(en?'☀ Light':'☀ روشن'):(en?'☾ Dark':'☾ تیره');localStorage.setItem('littlePlanner_theme',theme)}
+function applyTheme(theme){document.body.classList.toggle('dark-mode',theme==='dark');const en=document.documentElement.lang==='en';$('#theme-toggle').textContent=theme==='dark'?'☼':'☾';$('#theme-toggle').title=theme==='dark'?(en?'Switch to light mode':'حالت روشن'):(en?'Switch to dark mode':'حالت تیره');localStorage.setItem('littlePlanner_theme',theme)}
 applyTheme(savedTheme);
 $('#theme-toggle').addEventListener('click',()=>applyTheme(document.body.classList.contains('dark-mode')?'light':'dark'));
 // Full interface localization. All static text, generated UI, form controls and document direction are translated.
@@ -220,13 +220,13 @@ function applyLanguage(lang){
  uiLang=lang;localStorage.setItem('littlePlanner_lang',lang);
  document.documentElement.lang=lang;document.documentElement.dir=lang==='fa'?'rtl':'ltr';
  document.body.classList.toggle('english-ui',lang==='en');
- setTextIfChanged($('#language-toggle'),lang==='fa'?'EN':'فا');
+ $('#language-toggle').innerHTML=`◎ <span>${lang==='fa'?'EN':'فا'}</span>`;
  // Restore all known original Persian strings first, then translate. Re-rendering is handled by the observer below.
  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);
  nodes.forEach(n=>{const parent=n.parentElement;if(!parent||['SCRIPT','STYLE'].includes(parent.tagName)||parent.closest('#auth-dialog'))return;const raw=n.nodeValue;const t=translateText(raw);if(t!==raw)n.nodeValue=t;});
  $$('input[placeholder],textarea[placeholder]').forEach(el=>{if(!el.dataset.faPlaceholder)el.dataset.faPlaceholder=el.placeholder;el.placeholder=lang==='en'?(translations[el.dataset.faPlaceholder]||el.dataset.faPlaceholder):el.dataset.faPlaceholder;});
  $$('[aria-label]').forEach(el=>{if(!el.dataset.faAria)el.dataset.faAria=el.getAttribute('aria-label');el.setAttribute('aria-label',lang==='en'?(translations[el.dataset.faAria]||el.dataset.faAria):el.dataset.faAria)});
- setTextIfChanged($('#theme-toggle'),document.body.classList.contains('dark-mode')?(lang==='fa'?'☀ روشن':'☀ Light'):(lang==='fa'?'☾ تیره':'☾ Dark'));
+ setTextIfChanged($('#theme-toggle'),document.body.classList.contains('dark-mode')?'☼':'☾');
  const views={assignments:['STUDY SPACE / 01',lang==='fa'?'تکالیف':'Assignments',lang==='fa'?'همه‌ی کارهای درسی، یک‌جا و مرتب.':'All your schoolwork, organized in one place.',lang==='fa'?'＋ افزودن تکلیف':'＋ Add assignment'],habits:['DAILY RHYTHM / 02',lang==='fa'?'ردیاب عادت‌ها':'Habit Tracker',lang==='fa'?'تداوم‌های کوچک، تغییرهای بزرگ می‌سازند.':'Small consistent steps create big changes.',lang==='fa'?'＋ عادت جدید':'＋ Add habit'],weekly:['WEEK AT A GLANCE / 03',lang==='fa'?'پلنر هفتگی':'Weekly Planner',lang==='fa'?'برای هفته‌ات جا باز کن، نه فقط برای کارها.':'Make room for your week, not just your tasks.',lang==='fa'?'＋ افزودن کار':'＋ Add task']};
  const active=$('.nav-link.active')?.dataset.view||'assignments';setTextIfChanged($('#top-eyebrow'),lang==='fa'?({'assignments':'فضای مطالعه / ۰۱','habits':'ریتم روزانه / ۰۲','weekly':'نمای کلی هفته / ۰۳'}[active]):views[active][0]);setTextIfChanged($('#page-title'),views[active][1]);setTextIfChanged($('#page-subtitle'),views[active][2]);setTextIfChanged($('#main-add'),views[active][3]);
  setTextIfChanged($('#today-label'),lang==='fa'?new Intl.DateTimeFormat('fa-IR-u-ca-persian',{weekday:'long',day:'numeric',month:'long'}).format(today):new Intl.DateTimeFormat('en-US',{weekday:'long',day:'numeric',month:'long'}).format(today));
