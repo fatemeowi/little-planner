@@ -29,6 +29,7 @@ function load(key, fallback){try{const v=JSON.parse(localStorage.getItem('little
 function save(key,val){try{localStorage.setItem('littlePlanner_'+key,JSON.stringify(val));return true}catch(err){console.error('Could not save planner data:',err);return false}}
 let assignments=load('assignments',defaultAssignments), habits=load('habits',defaultHabits), weekly=load('weekly',makeEmptyWeek());
 let selectedCalendarDate=iso(today);
+let weeklyViewMode=localStorage.getItem('littlePlanner_weeklyViewMode')||'all';
 let displayedMonth=new Date(today.getFullYear(),today.getMonth(),today.getDate());
 let habitLogs=load('habitLogs',{});
 let editing={type:null,id:null};
@@ -40,7 +41,7 @@ function setView(view){
  $$('.nav-link').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
  const config={assignments:[document.documentElement.lang==='en'?'STUDY SPACE / 01':'فضای مطالعه / ۰۱','تکالیف','همه‌ی کارهای درسی، یک‌جا و مرتب.','＋ افزودن تکلیف'],habits:[document.documentElement.lang==='en'?'DAILY RHYTHM / 02':'ریتم روزانه / ۰۲','ردیاب عادت‌ها','تداوم‌های کوچک، تغییرهای بزرگ می‌سازند.','＋ عادت جدید'],weekly:[document.documentElement.lang==='en'?'WEEK AT A GLANCE / 03':'نمای کلی هفته / ۰۳','پلنر هفتگی','برای هفته‌ات جا باز کن، نه فقط برای کارها.','＋ افزودن کار']};
  $('#top-eyebrow').textContent=config[view][0];$('#page-title').textContent=config[view][1];$('#page-subtitle').textContent=config[view][2];$('#main-add').textContent=config[view][3];
- $('#main-add').onclick=()=> view==='assignments'?openModal('assignment'):view==='habits'?openModal('habit'):openModal('weekly');
+ $('#main-add').onclick=()=> view==='assignments'?openModal('assignment'):view==='habits'?openModal('habit'):openModal('weekly',null,selectedCalendarDate);
  if(document.documentElement.lang==='en'){config.assignments=['STUDY SPACE / 01','Assignments','All your schoolwork, organized in one place.','＋ Add assignment'];config.habits=['DAILY RHYTHM / 02','Habit Tracker','Small consistent steps create big changes.','＋ Add habit'];config.weekly=['WEEK AT A GLANCE / 03','Weekly Planner','Make room for your week, not just your tasks.','＋ Add task'];$('#top-eyebrow').textContent=config[view][0];$('#page-title').textContent=config[view][1];$('#page-subtitle').textContent=config[view][2];$('#main-add').textContent=config[view][3];}
 }
 $$('.nav-link').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
@@ -138,14 +139,25 @@ function renderWeekly(){
  const visibleWeek=Array.from({length:7},(_,i)=>{const date=new Date(weekStart);date.setDate(weekStart.getDate()+i);const key=iso(date);let item=weekly.find(d=>d.date===key);if(!item){item={day:weekDayName(i),date:key,focus:'',tasks:[]};weekly.push(item)}item.day=weekDayName(i);return item;});
  save('weekly',weekly);renderMiniCalendar();
  const all=visibleWeek.flatMap(d=>d.tasks),done=all.filter(t=>t[2]).length,pct=all.length?Math.round(done/all.length*100):0;
+ const selectedDay=visibleWeek.find(d=>d.date===selectedCalendarDate)||visibleWeek[0];
+ const daysToRender=weeklyViewMode==='selected'?[selectedDay]:visibleWeek;
+ const en=isEnglish();
+ $('#weekly-view-label').textContent=en?'Show tasks:':'نمایش کارها:';
+ $('#weekly-show-all').textContent=en?'All days':'همه روزها';
+ $('#weekly-show-selected').textContent=en?'Selected day only':'فقط روز انتخاب‌شده';
+ $('#weekly-show-all').classList.toggle('active',weeklyViewMode==='all');
+ $('#weekly-show-selected').classList.toggle('active',weeklyViewMode==='selected');
  $('#week-progress').textContent=pct+'%';$('#week-progress-bar').style.width=pct+'%';
  $('#week-bars').innerHTML=visibleWeek.map((d,i)=>{const n=d.tasks.filter(t=>t[2]).length,p=d.tasks.length?n/d.tasks.length*100:0;return `<div class="week-bar-wrap"><div class="week-bar" style="height:${Math.max(5,p*.65)}px;background:${dayColors[i]}" title="${d.day}: ${p}%"></div><span>${d.day.slice(0,1)}</span></div>`}).join('');
  $('#weekly-habits').innerHTML=habits.slice(0,5).map(h=>`<label class="focus-item"><input type="checkbox" ${isHabitDone(h.id,selectedCalendarDate)?'checked':''} data-week-habit="${h.id}"><span>${h.emoji} ${esc(h.name)}</span></label>`).join('')||'<span class="muted">عادت‌ها اینجا نمایش داده می‌شن.</span>';
  $$('#weekly-habits input').forEach(c=>c.onchange=()=>{const k=logKey(+c.dataset.weekHabit,selectedCalendarDate);if(c.checked)habitLogs[k]=true;else delete habitLogs[k];save('habitLogs',habitLogs);renderHabits();renderWeekly()});
- $('#weekly-days').innerHTML=visibleWeek.map((d,i)=>{const doneN=d.tasks.filter(t=>t[2]).length,total=d.tasks.length,p=total?Math.round(doneN/total*100):0;return `<article class="day-card" style="--day-color:${dayColors[i]}"><header class="day-header"><h3>${d.day}</h3><span>${faDate(new Date(d.date+'T12:00:00'))}${d.date===selectedCalendarDate?' · انتخاب‌شده':''}</span></header><div class="day-stats"><div class="day-stat"><b>${doneN}</b><span>انجام‌شده</span></div><div class="day-stat"><b>${total-doneN}</b><span>باقی‌مانده</span></div><div class="day-stat"><b>${total}</b><span>کل وظایف</span></div></div><div class="day-focus">تمرکز اصلی: <b>${esc(d.focus||'تعیین نشده')}</b> · ${p}%</div><div class="day-task-list">${d.tasks.map((t,j)=>`<label class="day-task ${t[2]?'done':''}"><input type="checkbox" data-date="${d.date}" data-task="${j}" ${t[2]?'checked':''}><span class="task-name">${esc(t[0])}</span><span class="task-priority">${esc(t[1])}</span></label>`).join('')}<button type="button" class="add-day-task" data-add-date="${d.date}">＋ افزودن کار برای ${d.day}</button></div></article>`}).join('');
+ $('#weekly-days').innerHTML=daysToRender.map((d)=>{const i=visibleWeek.findIndex(x=>x.date===d.date);const doneN=d.tasks.filter(t=>t[2]).length,total=d.tasks.length,p=total?Math.round(doneN/total*100):0;return `<article class="day-card" style="--day-color:${dayColors[i]}"><header class="day-header" data-select-date="${d.date}" role="button" tabindex="0" title="انتخاب این روز"><h3>${d.day}</h3><span>${faDate(new Date(d.date+'T12:00:00'))}${d.date===selectedCalendarDate?' · انتخاب‌شده':''}</span></header><div class="day-stats"><div class="day-stat"><b>${doneN}</b><span>انجام‌شده</span></div><div class="day-stat"><b>${total-doneN}</b><span>باقی‌مانده</span></div><div class="day-stat"><b>${total}</b><span>کل وظایف</span></div></div><div class="day-focus">تمرکز اصلی: <b>${esc(d.focus||'تعیین نشده')}</b> · ${p}%</div><div class="day-task-list">${d.tasks.map((t,j)=>`<label class="day-task ${t[2]?'done':''}"><input type="checkbox" data-date="${d.date}" data-task="${j}" ${t[2]?'checked':''}><span class="task-name">${esc(t[0])}</span><span class="task-priority">${esc(t[1])}</span></label>`).join('')}<button type="button" class="add-day-task" data-add-date="${d.date}">＋ افزودن کار برای ${d.day}</button></div></article>`}).join('');
  $$('#weekly-days input[type=checkbox]').forEach(c=>c.onchange=()=>{const day=weekly.find(d=>d.date===c.dataset.date);if(day)day.tasks[+c.dataset.task][2]=c.checked;save('weekly',weekly);renderWeekly()});
  $$('[data-add-date]').forEach(btn=>btn.onclick=()=>openModal('weekly',null,btn.dataset.addDate));
+ $$('[data-select-date]').forEach(el=>{const choose=()=>{selectedCalendarDate=el.dataset.selectDate;renderWeekly()};el.onclick=choose;el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}}});
 }
+$('#weekly-show-all').addEventListener('click',()=>{weeklyViewMode='all';localStorage.setItem('littlePlanner_weeklyViewMode',weeklyViewMode);renderWeekly()});
+$('#weekly-show-selected').addEventListener('click',()=>{weeklyViewMode='selected';localStorage.setItem('littlePlanner_weeklyViewMode',weeklyViewMode);renderWeekly()});
 function renderAll(){renderAssignments();renderHabits();renderWeekly()}
 $('#assignment-search').addEventListener('input',renderAssignments);$('#assignment-filter').addEventListener('change',renderAssignments);
 $('#add-habit').onclick=()=>openModal('habit');

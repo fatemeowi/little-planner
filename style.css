@@ -83,3 +83,105 @@ body.dark-mode .modal .field input[type="date"]{color-scheme:dark}
 
 /* Locale-aware custom due-date picker */
 .date-picker-wrap{position:relative;display:flex;gap:6px;align-items:stretch}.date-picker-wrap input{flex:1;min-width:0;cursor:pointer}.date-picker-trigger{border:1px solid var(--line,#e2e6ed);border-radius:8px;background:var(--paper,#fff);color:var(--ink,#444);padding:0 12px;font-size:17px}.date-picker-popover{position:absolute;z-index:1000;top:calc(100% + 7px);inset-inline-end:0;width:260px;padding:12px;background:var(--paper,#fff);color:var(--ink,#333);border:1px solid var(--line,#e2e6ed);border-radius:13px;box-shadow:0 12px 35px #18202b25}.date-picker-popover[hidden]{display:none}.date-picker-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.date-picker-head strong{font-size:12px}.date-picker-head button{border:1px solid var(--line,#e2e6ed);border-radius:7px;background:transparent;color:inherit;padding:3px 9px}.date-picker-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center}.date-picker-weekday{font-size:10px;color:var(--muted,#888);padding:5px 0;font-weight:700}.date-picker-blank{min-height:29px}.date-picker-day{border:0;border-radius:7px;background:transparent;color:inherit;padding:6px 0;font-size:11px}.date-picker-day:hover{background:#f7e5e7}.date-picker-day.selected{background:#b46a72;color:#fff;font-weight:700}.date-picker-day.today:not(.selected){outline:1px solid #a8b58a}body.dark-mode .date-picker-trigger,body.dark-mode .date-picker-popover,body.dark-mode .date-picker-head button{background:#1c2430;color:#e6e0d6;border-color:#414952}body.dark-mode .date-picker-day:hover{background:#3a2b32}
+
+
+/* Weekly planner day filter */
+.weekly-main-column{min-width:0;display:flex;flex-direction:column;gap:12px}.weekly-view-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 13px;background:var(--paper);border:1px solid var(--line);border-radius:13px;color:var(--muted);font-size:11px}.weekly-view-toggle{display:flex;gap:6px;flex-wrap:wrap}.weekly-view-toggle button{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:9px;padding:7px 11px;font-size:10px}.weekly-view-toggle button.active{background:var(--accent-soft);border-color:var(--accent-soft);color:var(--ink);font-weight:700}.day-header[role=button]{cursor:pointer}.day-header[role=button]:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}.weekly-view-toolbar{background:var(--paper)}body.dark-mode .weekly-view-toolbar{background:#242137;border-color:#39334f;color:var(--muted)}body.dark-mode .weekly-view-toggle button{background:#2a2640;border-color:#443b60;color:#d5ccf8}body.dark-mode .weekly-view-toggle button.active{background:#51436f;border-color:#51436f;color:#fff}
+
+/* Dark theme refresh: Snow / Pastel Petal / Electric Rose / Dark Raspberry / Rich Mahogany */
+body.dark-mode{
+  --ink:#fff3f2;
+  --muted:#e6b8cf;
+  --line:#6b244b;
+  --paper:#351027;
+  --bg:#250209;
+  --accent:#f10291;
+  --accent-soft:#89235b;
+  --shadow:0 16px 42px rgba(12,0,5,.38);
+  background:
+    radial-gradient(ellipse at 88% 8%,rgba(241,2,145,.25) 0,transparent 34%),
+    radial-gradient(ellipse at 8% 88%,rgba(137,35,91,.38) 0,transparent 36%),
+    #250209;
+  color:#fff3f2;
+}
+body.dark-mode .sidebar,
+body.dark-mode .summary-card,
+body.dark-mode .panel,
+body.dark-mode .table-wrap,
+body.dark-mode .habit-card,
+body.dark-mode .day-card,
+body.dark-mode .modal,
+body.dark-mode .auth-modal{
+  background:#351027;
+  border-color:#6b244b;
+  color:#fff3f2;
+}
+body.dark-mode .sidebar{background:linear-gradient(180deg,#351027,#250209)}
+body.dark-mode .brand strong,
+body.dark-mode .topbar h1,
+body.dark-mode .panel-title h2,
+body.dark-mode .section-heading h2{color:#fff3f2}
+body.dark-mode .brand small,
+body.dark-mode .nav-link,
+body.dark-mode .card-heading,
+body.dark-mode .section-heading p,
+body.dark-mode .panel-title p,
+body.dark-mode .muted,
+body.dark-mode .habit-card p,
+body.dark-mode .sidebar-label,
+body.dark-mode .eyebrow{color:#e6b8cf}
+body.dark-mode .brand-mark,
+body.dark-mode .profile-avatar{background:#89235b;color:#fff3f2;border-color:#f10291}
+body.dark-mode .nav-link.active{background:#89235b;color:#fff3f2}
+body.dark-mode .nav-link:hover{background:#4b1535}
+body.dark-mode .mini-note{background:#42132f;border-color:#89235b}
+body.dark-mode .mini-note b{color:#fff3f2}
+body.dark-mode .mini-note p{color:#e6b8cf}
+body.dark-mode .note-dot{background:#f10291}
+body.dark-mode .primary-btn{background:#f10291;color:#fff3f2;box-shadow:0 6px 18px rgba(241,2,145,.22)}
+body.dark-mode .primary-btn:hover{background:#d90080}
+body.dark-mode .secondary-btn,
+body.dark-mode .utility-btn,
+body.dark-mode .today-pill,
+body.dark-mode .tiny-tag{background:#42132f;border-color:#89235b;color:#fff3f2}
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea,
+body.dark-mode .search-input,
+body.dark-mode .select-input,
+body.dark-mode .field input,
+body.dark-mode .field select,
+body.dark-mode .field textarea{background:#250b1a;color:#fff3f2;border-color:#6b244b}
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder{color:#c58aa8}
+body.dark-mode .data-table th{background:#89235b;color:#fff3f2;border-color:#a33b72}
+body.dark-mode .data-table td{border-color:#54203d;color:#f3dce8}
+body.dark-mode .data-table tbody tr:hover{background:#42132f}
+body.dark-mode .progress-track{background:#5a2442}
+body.dark-mode .progress-track span{background:#f10291}
+body.dark-mode .donut:before{background:#351027}
+body.dark-mode .habit-calendar th{background:#42132f;color:#fff3f2}
+body.dark-mode .habit-calendar td:first-child{background:#351027;color:#fff3f2}
+body.dark-mode .habit-check{background:#250b1a;border-color:#a64c7b}
+body.dark-mode .habit-check:checked{background:#f10291;border-color:#f10291}
+body.dark-mode .mini-calendar .calendar-day,
+body.dark-mode .date-picker-trigger,
+body.dark-mode .date-picker-popover,
+body.dark-mode .date-picker-head button{background:#351027;color:#fff3f2;border-color:#6b244b}
+body.dark-mode .mini-calendar .calendar-day.selected,
+body.dark-mode .date-picker-day.selected{background:#f10291;color:#fff3f2}
+body.dark-mode .date-picker-day:hover{background:#89235b}
+body.dark-mode .date-picker-day.today:not(.selected){outline-color:#f10291}
+body.dark-mode .weekly-view-toolbar{background:#351027;border-color:#6b244b;color:#e6b8cf}
+body.dark-mode .weekly-view-toggle button{background:#250b1a;border-color:#6b244b;color:#e6b8cf}
+body.dark-mode .weekly-view-toggle button.active{background:#89235b;border-color:#89235b;color:#fff3f2}
+body.dark-mode .day-header{filter:none}
+body.dark-mode .day-stat,
+body.dark-mode .day-task-list{background:#250b1a;color:#fff3f2;border-color:#6b244b}
+body.dark-mode .icon-btn{background:#42132f;color:#f3b5d6}
+body.dark-mode .icon-btn:hover{background:#89235b;color:#fff3f2}
+body.dark-mode .app-footer{color:#e6b8cf}
+body.dark-mode .app-footer>span:nth-child(2){color:#f10291}
+body.dark-mode .footer-stars{color:#f7a4d2}
+body.dark-mode .reset-demo-btn{background:#42132f;border-color:#89235b;color:#fff3f2}
+@media(max-width:760px){body.dark-mode .sidebar{background:#351027}}
